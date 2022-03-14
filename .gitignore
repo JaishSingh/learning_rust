@@ -1,2 +1,6 @@
 /hangman/target
 /rust_server/target
+/pngg/target
+/hangman/Cargo.lock
+/rust_server/Cargo.lock
+/pngg/Cargo.lock
