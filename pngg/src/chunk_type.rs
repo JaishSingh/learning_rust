@@ -38,7 +38,7 @@ impl FromStr for ChunkType {
                 } else if *i >= 97 && *i<=122 {
                     continue;
                 } else {
-                    return Ok(temp);
+                    // return anyhow::Error::new<'static>;
                 }
             }
         Ok(temp)
