@@ -1,13 +1,75 @@
+use std::str::FromStr;
 
+use crate::{Error, Result};
+use crate::chunk::Chunk;
+use crate::chunk_type::ChunkType;
+pub struct Png{
+    chunks: Vec<Chunk>
+}
 
+impl TryFrom<&[u8]> for Png {
+    type Error = Error;
+
+    fn try_from(value: &[u8]) -> Result<Self> {
+        let mut chunk_vec:Vec<Chunk> = Vec::new();
+        let mut curr_chunk: usize = 8;
+        while true{
+            let curr_len = u32::from_be_bytes(value[curr_chunk..curr_chunk+4].try_into().expect("👺"));
+            let curr_type = String::from_utf8_lossy(&value[curr_chunk+4..curr_chunk+8]).to_string();
+            let temp = Chunk::new(
+                ChunkType::from_str(curr_type.as_str()).unwrap(),
+                value[curr_chunk+8..curr_chunk+curr_len as usize].to_vec());
+            chunk_vec.push(temp);
+            // println!("{:?}, {:?}", curr_chunk, curr_type);
+            curr_chunk = curr_chunk + curr_len as usize + 4;
+            // println!("{:?}, {:?}", curr_chunk, String::from_utf8_lossy(&value[..]));
+        }
+        println!("{} HJLKJKLHHJKL",chunk_vec.len());
+        Ok(Png::from_chunks(chunk_vec))
+    }
+}
+
+#[allow(unused)]
+impl Png {
+    const STANDARD_HEADER: [u8; 8] = [137, 80, 78, 71, 13, 10, 26, 10];
+
+    fn from_chunks(chunks: Vec<Chunk>) -> Png{
+        Self{ chunks }
+    }
+    fn append_chunk(&mut self, chunk: Chunk){
+        self.chunks.push(chunk);
+    }
+    fn remove_chunk(&mut self, chunk_type: &str) -> Result<Chunk>{
+        for i in 0..self.chunks.len(){
+            if  self.chunks[i].chunk_type().to_string().as_str() == chunk_type {
+                return Ok(self.chunks.remove(i));
+            }
+        }
+        //temp - remove once Error figured out
+        return Ok(Chunk::new(ChunkType::from_str("RuSt").unwrap(), vec![1,2,3,4]));
+    }
+    fn header(&self) -> &[u8; 8]{
+        &Png::STANDARD_HEADER
+    }
+    fn chunks(&self) -> &[Chunk]{
+        &self.chunks
+    }
+    fn chunk_by_type(&self, chunk_type: &str) -> Option<&Chunk>{
+        todo!()
+    }
+    fn as_bytes(&self) -> Vec<u8>{
+        let mut result= Png::STANDARD_HEADER[..].to_vec();
+        for i in self.chunks.iter(){
+            &mut result.append(&mut i.as_bytes());
+        }
+        result
+    }
+}
 
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chunk_type::ChunkType;
-    use crate::chunk::Chunk;
-    use std::str::FromStr;
     use std::convert::TryFrom;
 
     fn testing_chunks() -> Vec<Chunk> {
@@ -26,8 +88,6 @@ mod tests {
     }
 
     fn chunk_from_strings(chunk_type: &str, data: &str) -> Result<Chunk> {
-        use std::str::FromStr;
-
         let chunk_type = ChunkType::from_str(chunk_type)?;
         let data: Vec<u8> = data.bytes().collect();
 
@@ -164,7 +224,7 @@ mod tests {
 
         let png: Png = TryFrom::try_from(bytes.as_ref()).unwrap();
 
-        let _png_string = format!("{}", png);
+        // let _png_string = format!("{}", png);
     }
 
     // This is the raw bytes for a shrunken version of the `dice.png` image on Wikipedia

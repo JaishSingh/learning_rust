@@ -13,11 +13,8 @@ impl TryFrom<&[u8]> for Chunk {
     type Error = Error;
 
     fn try_from(value: &[u8]) -> Result<Self> {
-        // let length = u32::from_be_bytes(value[0..4].try_into().expect("slice with incorrect length"));
         let chunk_type = ChunkType::new(value[4..8].try_into().expect("error in creating ChunkType"));
         let data = value[8..value.len()-4].to_vec();
-        // let crc = u32::from_be_bytes(value[value.len()-4..value.len()].try_into().expect("slice with incorrect length"));
-        
         return Ok(Chunk::new(chunk_type, data));
     }
 }
@@ -36,7 +33,7 @@ impl fmt::Display for Chunk{
 
 #[allow(unused)]
 impl Chunk{
-    fn new(chunk_type: ChunkType, data: Vec<u8>) -> Chunk {
+    pub fn new(chunk_type: ChunkType, data: Vec<u8>) -> Chunk {
         let length = data.len() as u32;
         let hashing_data = [chunk_type.bytes().as_slice(), data.as_slice()].concat();
         let crc = crc::crc32::checksum_ieee(&hashing_data);
@@ -47,23 +44,29 @@ impl Chunk{
             crc
         }
     }
-    fn length(&self) -> u32 {
+    pub fn length(&self) -> u32 {
         self.length
     }
-    fn chunk_type(&self) -> &ChunkType {
+    pub fn chunk_type(&self) -> &ChunkType {
         &self.chunk_type
     }
-    fn data(&self) -> &[u8] {
+    pub fn data(&self) -> &[u8] {
         &self.data
     }
-    fn crc(&self) -> u32 {
+    pub fn crc(&self) -> u32 {
         self.crc
     }
-    fn data_as_string(&self) -> Result<String> {
+    pub fn data_as_string(&self) -> Result<String> {
         Ok(String::from_utf8_lossy(&self.data).to_string())
     }
-    fn as_bytes(&self) -> Vec<u8> {
-        self.data.to_vec()
+    pub fn as_bytes(&self) -> Vec<u8> {
+        [
+            self.length.to_be_bytes().as_ref(),
+            &self.chunk_type.bytes(),
+            self.data.as_slice(),
+            self.crc.to_be_bytes().as_ref(),
+        ]
+        .concat()
     }
 }
 
