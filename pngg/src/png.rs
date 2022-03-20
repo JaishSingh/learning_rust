@@ -1,3 +1,4 @@
+use std::fmt;
 use std::str::FromStr;
 
 use crate::{Error, Result};
@@ -20,6 +21,12 @@ impl TryFrom<&[u8]> for Png {
             curr_chunk += curr_len as usize + 12;
         }
         Ok(Png::from_chunks(chunk_vec))
+    }
+}
+
+impl fmt::Display for Png {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self.as_bytes())
     }
 }
 
@@ -220,7 +227,7 @@ mod tests {
 
         let png: Png = TryFrom::try_from(bytes.as_ref()).unwrap();
 
-        // let _png_string = format!("{}", png);
+        let _png_string = format!("{}", png);
     }
 
     // This is the raw bytes for a shrunken version of the `dice.png` image on Wikipedia
