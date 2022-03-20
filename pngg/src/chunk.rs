@@ -13,6 +13,7 @@ impl TryFrom<&[u8]> for Chunk {
     type Error = Error;
 
     fn try_from(value: &[u8]) -> Result<Self> {
+        // println!("{:?}", &value);
         let chunk_type = ChunkType::new(value[4..8].try_into().expect("error in creating ChunkType"));
         let data = value[8..value.len()-4].to_vec();
         return Ok(Chunk::new(chunk_type, data));

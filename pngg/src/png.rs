@@ -13,18 +13,12 @@ impl TryFrom<&[u8]> for Png {
     fn try_from(value: &[u8]) -> Result<Self> {
         let mut chunk_vec:Vec<Chunk> = Vec::new();
         let mut curr_chunk: usize = 8;
-        while true{
+        while curr_chunk < value.len(){
+            // println!("{:?}\n{:?}", value[curr_chunk..curr_chunk+4].to_vec(), value[curr_chunk..].to_vec());
             let curr_len = u32::from_be_bytes(value[curr_chunk..curr_chunk+4].try_into().expect("👺"));
-            let curr_type = String::from_utf8_lossy(&value[curr_chunk+4..curr_chunk+8]).to_string();
-            let temp = Chunk::new(
-                ChunkType::from_str(curr_type.as_str()).unwrap(),
-                value[curr_chunk+8..curr_chunk+curr_len as usize].to_vec());
-            chunk_vec.push(temp);
-            // println!("{:?}, {:?}", curr_chunk, curr_type);
-            curr_chunk = curr_chunk + curr_len as usize + 4;
-            // println!("{:?}, {:?}", curr_chunk, String::from_utf8_lossy(&value[..]));
+            chunk_vec.push(value[curr_chunk..curr_chunk+12+(curr_len as usize)].try_into()?);
+            curr_chunk += curr_len as usize + 12;
         }
-        println!("{} HJLKJKLHHJKL",chunk_vec.len());
         Ok(Png::from_chunks(chunk_vec))
     }
 }
@@ -55,7 +49,9 @@ impl Png {
         &self.chunks
     }
     fn chunk_by_type(&self, chunk_type: &str) -> Option<&Chunk>{
-        todo!()
+        self.chunks
+            .iter()
+            .find(|chunk| chunk.chunk_type().to_string() == chunk_type)
     }
     fn as_bytes(&self) -> Vec<u8>{
         let mut result= Png::STANDARD_HEADER[..].to_vec();
