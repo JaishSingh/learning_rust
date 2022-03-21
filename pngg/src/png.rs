@@ -34,13 +34,13 @@ impl fmt::Display for Png {
 impl Png {
     const STANDARD_HEADER: [u8; 8] = [137, 80, 78, 71, 13, 10, 26, 10];
 
-    fn from_chunks(chunks: Vec<Chunk>) -> Png{
+    pub fn from_chunks(chunks: Vec<Chunk>) -> Png{
         Self{ chunks }
     }
-    fn append_chunk(&mut self, chunk: Chunk){
+    pub fn append_chunk(&mut self, chunk: Chunk){
         self.chunks.push(chunk);
     }
-    fn remove_chunk(&mut self, chunk_type: &str) -> Result<Chunk>{
+    pub fn remove_chunk(&mut self, chunk_type: &str) -> Result<Chunk>{
         for i in 0..self.chunks().len(){
             if  self.chunks()[i].chunk_type().to_string().as_str() == chunk_type {
                 return Ok(self.chunks.remove(i));
@@ -49,18 +49,18 @@ impl Png {
         //temp - remove once Error figured out
         return Ok(Chunk::new(ChunkType::from_str("RuSt").unwrap(), vec![1,2,3,4]));
     }
-    fn header(&self) -> &[u8; 8]{
+    pub fn header(&self) -> &[u8; 8]{
         &Png::STANDARD_HEADER
     }
-    fn chunks(&self) -> &[Chunk]{
+    pub fn chunks(&self) -> &[Chunk]{
         &self.chunks
     }
-    fn chunk_by_type(&self, chunk_type: &str) -> Option<&Chunk>{
+    pub fn chunk_by_type(&self, chunk_type: &str) -> Option<&Chunk>{
         self.chunks()
             .iter()
             .find(|chunk| chunk.chunk_type().to_string() == chunk_type)
     }
-    fn as_bytes(&self) -> Vec<u8>{
+    pub fn as_bytes(&self) -> Vec<u8>{
         let mut result= Png::STANDARD_HEADER[..].to_vec();
         for i in self.chunks().iter(){
             &mut result.append(&mut i.as_bytes());
