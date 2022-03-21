@@ -6,7 +6,7 @@ use std::{
     str::FromStr,
 };
 
-use crate::{Error, Result, args::{DecodeArgs, EncodeArgs, RemoveArgs}, chunk::Chunk, chunk_type::ChunkType, png::Png};
+use crate::{Result, args::{DecodeArgs, EncodeArgs, RemoveArgs}, chunk::Chunk, chunk_type::ChunkType, png::Png};
 
 fn take_png<P: AsRef<Path>>(input: P) -> Result<Png> {
     let mut file = OpenOptions::new().write(true).read(true).open(input)?;
